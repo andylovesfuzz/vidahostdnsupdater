@@ -42,7 +42,7 @@
 
         public function getDomainId($domain)
         {
-            $result = Tools::getFromURL('https://my.vidahost.com/customdns.php');
+            $result = Tools::getFromURL($this->baseURL.'/customdns.php');
 
             /* We have to find the domain ID to do *another* POST to get to the right page. */
             preg_match('/<option value="([0-9]+)">'.$domain.'<\/option>/', $result, $matches);
@@ -60,7 +60,7 @@
                 'domainid' => $domainId,
             );
 
-            $result = Tools::postToUrl('https://my.vidahost.com/customdns.php', $postVars);
+            $result = Tools::postToUrl($this->baseURL.'/customdns.php', $postVars);
 
             return $result;
         }
@@ -128,7 +128,7 @@
         
         public function postRecordChanges($postVars) 
         {
-            $result = Tools::postToUrl('https://my.vidahost.com/customdns.php', $postVars);
+            $result = Tools::postToUrl($this->baseURL.'/customdns.php', $postVars);
             return $result;
         }
 
