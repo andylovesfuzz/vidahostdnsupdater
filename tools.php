@@ -35,7 +35,8 @@
 
             $result = curl_exec($curl);
             $curlInfo = curl_getinfo($curl);
-
+            //This line is useful to uncomment when debugging
+            //print_r($curlInfo);
             if (!empty($curlInfo['redirect_url'])) {
                 return Tools::getFromUrl($curlInfo['redirect_url'], 1);
             } else {
@@ -61,6 +62,8 @@
 
             $result = curl_exec($curl);
             $curlInfo = curl_getinfo($curl);
+            //This line is useful to uncomment when debugging
+           // print_r($curlInfo);
 
             if (!empty($curlInfo['redirect_url'])) {
                 return Tools::getFromUrl($curlInfo['redirect_url'], $redirectNum + 1);
