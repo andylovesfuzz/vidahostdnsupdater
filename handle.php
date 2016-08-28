@@ -19,6 +19,7 @@
             $contents = file_get_contents($loginUrl);
 
             $this->token = Tools::extractFromForm('frmLogin', 'token', $contents);
+
         }
 
         public function attemptLogin($username, $password)
@@ -42,10 +43,9 @@
 
         public function getDomainId($domain)
         {
-            $result = Tools::getFromURL($this->baseURL.'/customdns.php');
-
+            $result = Tools::getFromURL($this->baseURL.'/clientarea.php?action=domains');
             /* We have to find the domain ID to do *another* POST to get to the right page. */
-            preg_match('/<option value="([0-9]+)">'.$domain.'<\/option>/', $result, $matches);
+            preg_match('/<td id="domain([0-9]+)">'.$domain.'<\/td>/', $result, $matches);
             if (!isset($matches[1])) {
                 throw new Exception('Unable to find domain on page');
             }
@@ -55,39 +55,46 @@
 
         public function openEditPage($domainId)
         {
-            $postVars = array(
-                'token' => $this->getToken(),
-                'domainid' => $domainId,
+	$postVars = array(
+                'token' => $this->getToken()//,
+                //'domainid' => $domainId,
             );
+            $result = Tools::postToUrl($this->baseURL.'/customdns.php?id='.$domainId, $postVars);
+            return $result;
+        }
 
-            $result = Tools::postToUrl($this->baseURL.'/customdns.php', $postVars);
-
+        public function openDomainPage($domainId)
+        {
+            $result = Tools::getFromUrl($this->baseURL.'/clientarea.php?action=domaindetails&id='.$domainId);
             return $result;
         }
 
         public function findDomainRecordsOnPageAsPostVars($page, $domainId)
         {
+
             preg_match_all('/<input name="name-([0-9]+)" type="text"/', $page, $matches);
 
             if (count($matches[1]) == 0) {
                 return array();
             }
-            
-            $recordIds = $matches[1];
 
+            $recordIds = $matches[1];
             /* Todo: make this more robust */
             $return = array();
             foreach($recordIds as $recordId) {
-            
+
                 preg_match('/<input name="name-'.$recordId.'" type="text" value="([^"]+)"/', $page, $matches);
                 $return['name-'.$recordId] = $matches[1];
-                
+
                 preg_match('/<input type="text" name="content-'.$recordId.'" value="([^"]+)"/', $page, $matches);
                 $return['content-'.$recordId] = $matches[1];
-                
+
                 preg_match('/<input type="text" name="ttl-'.$recordId.'" value="([^"]+)"/', $page, $matches);
                 $return['ttl-'.$recordId] = $matches[1];
-                
+
+                preg_match('/<input type="text" name="prio-'.$recordId.'" value="([^"]+)"/', $page, $matches);
+                $return['prio-'.$recordId] = $matches[1];
+
                 preg_match('/<select name="type-'.$recordId.'" .*<option value="([^"]+)" selected>/s', $page, $matches);
                 $return['type-'.$recordId] = $matches[1];
             }
@@ -99,8 +106,8 @@
 
             return $return;
         }
-        
-        public function changeRecordValuesInPostVars($postVars, $record, $content, $type, $ttl)
+
+        public function changeRecordValuesInPostVars($postVars, $record, $content, $type, $ttl, $priority)
         {
             $recordId = 0;
             foreach($postVars as $key=>$val)
@@ -108,29 +115,28 @@
                 if (substr($key, 0, 4) != 'name') {
                     continue;
                 }
-                
                 if ($val == $record) {
                     $recordId = substr($key, 5);
                     break;
                 }
             }
-            
+
             if ($recordId == 0) {
                 throw new Exception('Unable to find record: '.$record);
             }
-            
+
             $postVars['content-'.$recordId] = $content;
             $postVars['ttl-'.$recordId] = $ttl;
+            $postVars['prio-'.$recordId] = $priority;
             $postVars['type-'.$recordId] = $type;
 
             return $postVars;
         }
-        
-        public function postRecordChanges($postVars) 
+
+        public function postRecordChanges($postVars, $domainid)
         {
-            $result = Tools::postToUrl($this->baseURL.'/customdns.php', $postVars);
+            $result = Tools::postToUrl($this->baseURL.'/customdns.php?id='.$domainid, $postVars);
             return $result;
         }
 
     }
-

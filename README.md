@@ -26,5 +26,10 @@ There's no autoloading, so your script should look something like this:
             'record.to.edit.yourdomain.com', 
             '1.2.3.4', // IPv4 IP
             'A',       // Type
-            '86400'    // TTL
+            '86400',    // TTL
+            '0'    // priority
         );
+
+
+#####Update August 2016 by Gareth Ellis #####
+Following a recent vidahost change, I've fixed this so it now works with the current implementation on Vidahost.

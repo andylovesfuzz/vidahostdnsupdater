@@ -20,17 +20,14 @@
             return $this->loggedIn;
         }
         
-        public function setRecord($domain, $record, $content, $type = 'A', $ttl = '86400', $priority = 0)
+        public function setRecord($domain, $record, $content, $type = 'A', $ttl = '86400', $priority = '')
         {
-            // Priority doesn't seem to be implemented on vidahost, so that will be ignored for now.
 
             $domainId = $this->handle->getDomainId($domain);
             $editPage = $this->handle->openEditPage($domainId);
             $postVars = $this->handle->findDomainRecordsOnPageAsPostVars($editPage, $domainId);
-
-            $postVars = $this->handle->changeRecordValuesInPostVars($postVars, $record, $content, $type, $ttl);
-
-            $this->handle->postRecordChanges($postVars);
+            $postVars = $this->handle->changeRecordValuesInPostVars($postVars, $record, $content, $type, $ttl, $priority);
+            $this->handle->postRecordChanges($postVars, $domainId);
         }
 
         public function logout()
